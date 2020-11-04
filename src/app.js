@@ -10,14 +10,14 @@ app.use(cors());
 
 const repositories = [];
 
+// Rota que lista todos os repositórios
 app.get("/repositories", (request, response) => {
-  // TODO
+  return response.json(repositories);
 });
 
+// Cadastro de um novo repositório
 app.post("/repositories", (request, response) => {
   const {title, url, techs} = request.body;
-
-  // Objeto Repository atual
   const repository ={
     id: uuid(),
     title,
@@ -25,22 +25,49 @@ app.post("/repositories", (request, response) => {
     techs,
     likes: 0,
   };
-
-  // Empurrando o objeto repository atual para o array repositories (Ulitma posição)
   repositories.push(repository);
   return response.json(repository);
 });
 
+// Alteração de dados de um repositório
 app.put("/repositories/:id", (request, response) => {
-  // TODO
+   const {id} = request.params;
+   const {title,url,techs, likes} = request.body;
+   const repositoryIndex = repositories.findIndex(repository => repository.id == id);
+   if(repositoryIndex < 0){
+    return response.status(400).json({error:'Repository not found'});
+  }
+   const repository = {
+       id, 
+       title,
+       url,
+       techs,
+       likes: repositories[repositoryIndex].likes,
+   };
+   repositories[repositoryIndex] = repository;
+   return response.json(repository);
 });
 
+// Rota para exclusão de um reposítório
 app.delete("/repositories/:id", (request, response) => {
-  // TODO
+  const {id} = request.params;
+  const repositoryIndex = repositories.findIndex(repository => repository.id == id);
+  if(repositoryIndex < 0){
+    return response.status(400).json({error:'Repository not found'});
+}
+  repositories.splice(repositoryIndex, 1);
+  return response.status(204).send();
 });
 
+// Rota para atualizar o número de likes de um projeto
 app.post("/repositories/:id/like", (request, response) => {
-  // TODO
+  const {id} = request.params;
+  const repository = repositories.find(repository => repository.id == id);
+  if(!repository) {
+    return response.status(400).send();
+  }
+  repository.likes++;
+  return response.json(repository);
 });
 
 module.exports = app;
